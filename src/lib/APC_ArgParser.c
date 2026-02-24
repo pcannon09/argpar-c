@@ -115,6 +115,39 @@ APC_RGB __apc_rgbToRGBStruct(const char *rgbStr)
 		return rgb;
 	}
 
+	else if (strcmp(rgbStr, "${BOLD}") == 0)
+	{
+		rgb.__externalAction = APC_RGB_Command_Bold;
+
+ 		rgb.r = 0;
+ 		rgb.g = 0;
+ 		rgb.b = 0;
+
+		return rgb;
+	}
+
+	else if (strcmp(rgbStr, "${ITALIC}") == 0)
+	{
+		rgb.__externalAction = APC_RGB_Command_Italic;
+
+ 		rgb.r = 0;
+ 		rgb.g = 0;
+ 		rgb.b = 0;
+
+		return rgb;
+	}
+
+	else if (strcmp(rgbStr, "${UNDERLINE}") == 0)
+	{
+		rgb.__externalAction = APC_RGB_Command_Underline;
+
+ 		rgb.r = 0;
+ 		rgb.g = 0;
+ 		rgb.b = 0;
+
+		return rgb;
+	}
+
     if (!rgbStr)
         return rgb;
 
@@ -199,6 +232,15 @@ char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg)
 			if (rgb.__externalAction == APC_RGB_Command_Reset)
 				rgbStr = APC_STYLE_RESET;
 
+			else if (rgb.__externalAction == APC_RGB_Command_Bold)
+				rgbStr = APC_STYLE_BOLD;
+
+			else if (rgb.__externalAction == APC_RGB_Command_Italic)
+				rgbStr = APC_STYLE_ITALIC;
+
+			else if (rgb.__externalAction == APC_RGB_Command_Underline)
+				rgbStr = APC_STYLE_UNDERLINE;
+
 			else rgbStr = __apc_setRGB(rgb.r, rgb.g, rgb.b);
 
 			// 1. Remove `${r,g,b}` with its params
@@ -224,25 +266,66 @@ char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg)
 	return ret;
 }
 
-char *apc_generateHelp(APC_ArgParser *argpar)
+char *apc_generateHelp(APC_ArgParser *argpar,
+                       const char *title,
+                       const char *topInfo,
+                       const char *lowerInfo)
 {
-	CSTR docs = cstr_init();
-	cstr_set(&docs, "");
+    CSTR docs = cstr_init();
+    cstr_set(&docs, "");
 
-	for (size_t i = 0 ; i < argpar->args.size ; i++)
-	{
-		char *toFormat = "${190,56,255}Testing${R} hehe haha";
-		char *result = __apc_colorFormat(argpar, toFormat);
+    CSTR tmpContent = cstr_init();
+    cstr_set(&tmpContent, "");
 
-		printf("RESULT: %s\n", result);
+    char *result = NULL;
 
-		APC_FREE(result);
-	}
+    // Title
+    cstr_set(&tmpContent, "");
+    cstr_add(&tmpContent, APC_STYLECOLOR_TITLE "${BOLD}");
+    cstr_add(&tmpContent, title ? title : "");
+    cstr_add(&tmpContent, "${R}\n");
 
-	char *data = CSTR_sys_strdup(docs.data);
+    result = __apc_colorFormat(argpar, tmpContent.data);
 
-	cstr_destroy(&docs);
+    if (result)
+    {
+        cstr_add(&docs, result);
+        APC_FREE(result);
+    }
 
-	return data;
+    // Top info
+    cstr_set(&tmpContent, "");
+    cstr_add(&tmpContent, "${ITALIC}");
+    cstr_add(&tmpContent, topInfo ? topInfo : "");
+    cstr_add(&tmpContent, "${R}\n");
+
+    result = __apc_colorFormat(argpar, tmpContent.data);
+
+    if (result)
+    {
+        cstr_add(&docs, result);
+        APC_FREE(result);
+    }
+
+    // Lower info
+    cstr_set(&tmpContent, "");
+    cstr_add(&tmpContent, "${ITALIC}");
+    cstr_add(&tmpContent, lowerInfo ? lowerInfo : "");
+    cstr_add(&tmpContent, "${R}");
+
+    result = __apc_colorFormat(argpar, tmpContent.data);
+
+    if (result)
+    {
+        cstr_add(&docs, result);
+        APC_FREE(result);
+    }
+
+    char *data = CSTR_sys_strdup(docs.data);
+
+    cstr_destroy(&docs);
+    cstr_destroy(&tmpContent);
+
+    return data;
 }
 

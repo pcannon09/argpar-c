@@ -16,12 +16,23 @@
 
 __APC_CPP_GUARD_OPEN
 
-#define APC_STYLE_RESET 	"\033[0m"
+#define APC_STYLE_RESET 				"\033[0m"
+#define APC_STYLE_BOLD 					"\033[1m"
+#define APC_STYLE_ITALIC				"\033[3m"
+#define APC_STYLE_UNDERLINE 			"\033[4m"
+#define APC_STYLE_STRIKETRHOUGH 		"\033[9m"
+
+#define APC_STYLECOLOR_TITLE 			"${245,245,245}" // rgb(245,245,245)
+#define APC_STYLECOLOR_IMPORTANT		"${255,71,76}" // rgb(255,71,76)
+#define APC_STYLECOLOR_WARNING			"${255,255,40}" // rgb(255,255,40)
 
 enum APC_RGB_Command
 {
 	APC_RGB_Command_None,
 	APC_RGB_Command_Reset,
+	APC_RGB_Command_Bold,
+	APC_RGB_Command_Italic,
+	APC_RGB_Command_Underline,
 };
 
 typedef struct
@@ -62,7 +73,11 @@ APC_RGB __apc_rgbToRGBStruct(const char *rgbStr);
 
 void apc_destroy(APC_ArgParser *argpar);
 
-char *apc_generateHelp(APC_ArgParser *argpar);
+char *apc_generateHelp(APC_ArgParser *argpar,
+		const char *title,
+		const char *topInfo,
+		const char *lowerInfo
+);
 char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg);
 char *__apc_setRGB(int r, int g, int b);
 
