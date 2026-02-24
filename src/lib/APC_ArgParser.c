@@ -21,8 +21,26 @@ APC_ArgParser apc_init(int argc, char *argv[])
 	return parser;
 }
 
+APC_ArgInfo apc_initInfo(void)
+{
+	APC_ArgInfo info = {0};
+	info.aliases = cvec_init(-1, sizeof(const char*));
+
+	return info;
+}
+
 void apc_destroy(APC_ArgParser *argpar)
 {
+	for (size_t i = 0 ; i < argpar->args.size ; i++)
+	{
+		APC_ArgInfo *info = cvec_get(&argpar->args, i);
+
+		if (!info) continue;
+
+		// Destroy
+		cvec_destroy(&info->aliases);
+	}
+
 	cvec_destroy(&argpar->args);
 }
 
@@ -61,6 +79,18 @@ bool apc_get(APC_ArgParser *argpar, const char *id)
 			if (strcmp(argpar->argv[argv], info->param) == 0 ||
 				strcmp(argpar->argv[argv], info->sparam) == 0)
 				return true;
+
+			// Parse aliases
+			for (size_t a = 0 ; a < info->aliases.size ; a++)
+			{
+				char **alias = cvec_get(&info->aliases, a);
+
+				if (!alias && !*alias)
+					continue;
+
+				if (strcmp(argpar->argv[argv], *alias) == 0)
+					return true;
+			}
 		}
 	}
 

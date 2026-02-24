@@ -32,6 +32,8 @@ typedef struct
 	char *param;
 	char *sparam;
 	char *help;
+
+	CVEC aliases; // CVEC of: const char*
 } APC_ArgInfo;
 
 typedef struct
@@ -58,6 +60,7 @@ typedef struct
 } APC_RGB;
 
 APC_ArgParser apc_init(int argc, char *argv[]);
+APC_ArgInfo apc_initInfo(void);
 APC_RGB __apc_rgbToRGBStruct(const char *rgbStr);
 
 void apc_destroy(APC_ArgParser *argpar);
