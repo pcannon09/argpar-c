@@ -66,56 +66,162 @@ bool apc_get(APC_ArgParser *argpar, const char *id)
 	return false;
 }
 
-char *__apc_setRGB(unsigned int r, unsigned int g, unsigned int b)
+char *__apc_setRGB(int r, int g, int b)
 {
-	CSTR formatted = cstr_init();
+	if (r < 0 || r > 255) return NULL;
+	if (g < 0 || g > 255) return NULL;
+	if (b < 0 || b > 255) return NULL;
 
-	cstr_set(&formatted, "\033[38;2;");
-	cstr_add(&formatted, __APC_INT2PTR(r)); cstr_add(&formatted, ";");
-	cstr_add(&formatted, __APC_INT2PTR(g)); cstr_add(&formatted, ";");
-	cstr_add(&formatted, __APC_INT2PTR(b)); cstr_add(&formatted, "m");
+    CSTR formatted = cstr_init();
 
-	char *ret = CSTR_sys_strdup(formatted.data);
+    char tmp[16];
 
-	cstr_destroy(&formatted);
+    cstr_set(&formatted, "\033[38;2;");
 
-	return ret;
+    snprintf(tmp, sizeof(tmp), "%u", r);
+    cstr_add(&formatted, tmp);
+    cstr_add(&formatted, ";");
+
+    snprintf(tmp, sizeof(tmp), "%u", g);
+    cstr_add(&formatted, tmp);
+    cstr_add(&formatted, ";");
+
+    snprintf(tmp, sizeof(tmp), "%u", b);
+    cstr_add(&formatted, tmp);
+    cstr_add(&formatted, "m");
+
+    char *ret = CSTR_sys_strdup(formatted.data);
+
+    cstr_destroy(&formatted);
+
+    return ret;
+}
+
+APC_RGB __apc_rgbToRGBStruct(const char *rgbStr)
+{
+    APC_RGB rgb = {0};
+ 	rgb.__externalAction = APC_RGB_Command_None;
+
+	// Reset terminal styles
+	// Such as color, bolds, italics, etc
+	if (strcmp(rgbStr, "${R}") == 0)
+	{
+		rgb.__externalAction = APC_RGB_Command_Reset;
+
+ 		rgb.r = 0;
+ 		rgb.g = 0;
+ 		rgb.b = 0;
+
+		return rgb;
+	}
+
+    if (!rgbStr)
+        return rgb;
+
+    int r, g, b;
+
+    // Get format: ${r,g,b}
+    if (sscanf(rgbStr, "${%d,%d,%d}", &r, &g, &b) == 3)
+    {
+        if (r >= 0 && r <= 255) rgb.r = (unsigned char)r;
+        if (g >= 0 && g <= 255) rgb.g = (unsigned char)g;
+        if (b >= 0 && b <= 255) rgb.b = (unsigned char)b;
+    }
+
+    return rgb;
 }
 
 char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg)
 {
-    CSTR result = cstr_init();
-    cstr_set(&result, msg);
+	CSTR result = cstr_init();
+	cstr_set(&result, msg);
 
-    if (!argpar->enableColor)
-    {
-        int pos = 0;
+	if (!argpar->enableColor)
+	{
+		// Remove occurrences that have:
+		// `${` until the next `}`
+		int pos = 0;
 
-        while (1)
-        {
-            const int start = cstr_findFrom(&result, "${", pos);
+		while (1)
+		{
+			const int start = cstr_findFrom(&result, "${", pos);
 
-            if (start == CSTR_NPOS)
-                break;
+			if (start == CSTR_NPOS)
+				break;
 
-            const int end = cstr_findFrom(&result, "}", start + 2);
+			const int end = cstr_findFrom(&result, "}", start + 2);
 
-            if (end == CSTR_NPOS)
-                break;
+			if (end == CSTR_NPOS)
+				break;
 
-            int len = (end - start) + 1;
+			int len = (end - start) + 1;
 
-            cstr_erase(&result, start, len);
+			cstr_erase(&result, start, len);
 
-            pos = start;
-        }
-    }
+			pos = start;
+		}
+	}
 
-    char *ret = CSTR_sys_strdup(result.data);
+	else
+	{
+		// Replace occurrences that have:
+		// `${` until the next `}`
+		// With the corresponding color syntax;
+		// ${r,g,b}
 
-    cstr_destroy(&result);
+		int pos = 0;
 
-    return ret;
+		CSTR substr = cstr_init();
+
+		while (1)
+		{
+			const int start = cstr_findFrom(&result, "${", pos);
+
+			if (start == CSTR_NPOS)
+				break;
+
+			const int end = cstr_findFrom(&result, "}", start + 2);
+
+			if (end == CSTR_NPOS)
+				break;
+
+			int len = (end - start) + 1;
+
+			cstr_set(&substr, result.data);
+			cstr_substr(&substr, start, len);
+
+			// Set the RGB to the struct and then format it to string to
+			// output it in an ANSI color format
+			const APC_RGB rgb = __apc_rgbToRGBStruct(substr.data);
+
+			char *rgbStr = NULL;
+
+			if (rgb.__externalAction == APC_RGB_Command_Reset)
+				rgbStr = APC_STYLE_RESET;
+
+			else rgbStr = __apc_setRGB(rgb.r, rgb.g, rgb.b);
+
+			// 1. Remove `${r,g,b}` with its params
+			// 2. And Insert ANSI string at same position where it's supposed to be
+			cstr_erase(&result, start, len);
+			cstr_insert(&result, rgbStr, start);
+
+			// Move position forward past inserted ANSI sequence
+			pos = start + strlen(rgbStr);
+
+			// If external action is made
+			// DO NOT free, or else, it'll crash
+			if (!rgb.__externalAction) { APC_FREE(rgbStr); }
+		}
+
+		cstr_destroy(&substr);
+	}
+
+	char *ret = CSTR_sys_strdup(result.data);
+
+	cstr_destroy(&result);
+
+	return ret;
 }
 
 char *apc_generateHelp(APC_ArgParser *argpar)
@@ -125,7 +231,7 @@ char *apc_generateHelp(APC_ArgParser *argpar)
 
 	for (size_t i = 0 ; i < argpar->args.size ; i++)
 	{
-		char *toFormat = "Hello ${testest} world ${hey}, bye";
+		char *toFormat = "${190,56,255}Testing${R} hehe haha";
 		char *result = __apc_colorFormat(argpar, toFormat);
 
 		printf("RESULT: %s\n", result);

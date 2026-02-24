@@ -16,8 +16,13 @@
 
 __APC_CPP_GUARD_OPEN
 
-#define __APC_INT2PTR(_int) (char*)(intptr_t)(_int)
-#define __APC_PTR2INT(_ptr) (int)(intptr_t)(_ptr)
+#define APC_STYLE_RESET 	"\033[0m"
+
+enum APC_RGB_Command
+{
+	APC_RGB_Command_None,
+	APC_RGB_Command_Reset,
+};
 
 typedef struct
 {
@@ -43,13 +48,23 @@ typedef struct
 	char **argv;
 } APC_ArgParser;
 
+typedef struct
+{
+	enum APC_RGB_Command __externalAction;
+
+	unsigned int r;
+	unsigned int g;
+	unsigned int b;
+} APC_RGB;
+
 APC_ArgParser apc_init(int argc, char *argv[]);
+APC_RGB __apc_rgbToRGBStruct(const char *rgbStr);
 
 void apc_destroy(APC_ArgParser *argpar);
 
 char *apc_generateHelp(APC_ArgParser *argpar);
 char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg);
-char *__apc_setRGB(unsigned int r, unsigned int g, unsigned int b);
+char *__apc_setRGB(int r, int g, int b);
 
 bool apc_add(APC_ArgParser *argpar, APC_ArgInfo info);
 bool apc_get(APC_ArgParser *argpar, const char *id);
