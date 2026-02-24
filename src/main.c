@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	APC_ArgParser parser = apc_init(argc, argv);
 
 	{
-		APC_ArgInfo info = {0};
+		APC_ArgInfo info = apc_initInfo();
 		info.id = "version";
 		info.param = "--version";
 		info.sparam = "-v";
@@ -18,15 +18,16 @@ int main(int argc, char *argv[])
 	}
 
 	{
-		APC_ArgInfo info = {0};
+		APC_ArgInfo info = apc_initInfo();
 		info.id = "help";
 		info.param = "--help";
 		info.sparam = "-h";
 		info.help = "Show this help";
 
+		cvec_push(&info.aliases, const char *, "-?");
+
 		apc_add(&parser, info);
 	}
-
 
 	if (apc_get(&parser, "version"))
 	{
