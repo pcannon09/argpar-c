@@ -41,8 +41,6 @@ int main(int argc, char *argv[])
 
 	else if (apc_get(&parser, "help"))
 	{
-		parser.enableColor = false;
-
 		char *helpMsg = apc_generateHelp(&parser);
 
 		printf("%s\n", helpMsg);
