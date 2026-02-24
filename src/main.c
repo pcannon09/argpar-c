@@ -41,7 +41,11 @@ int main(int argc, char *argv[])
 
 	else if (apc_get(&parser, "help"))
 	{
-		char *helpMsg = apc_generateHelp(&parser);
+		char *helpMsg = apc_generateHelp(
+				&parser,
+				"APC Help",
+				"Hello world!",
+				"Goodbye world");
 
 		printf("%s\n", helpMsg);
 
