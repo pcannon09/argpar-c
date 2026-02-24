@@ -323,7 +323,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		cstr_add(&tmpContent, info->param);
 		cstr_add(&tmpContent, "|");
 		cstr_add(&tmpContent, info->sparam);
-		if (!info->required) cstr_add(&tmpContent, "]");
+		if (!info->required) cstr_add(&tmpContent, " ]");
 		cstr_add(&tmpContent, "; ");
 		cstr_add(&tmpContent, info->help);
 		cstr_add(&tmpContent, "\n");
