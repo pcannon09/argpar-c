@@ -308,6 +308,31 @@ char *apc_generateHelp(APC_ArgParser *argpar,
         APC_FREE(result);
     }
 
+    // MAIN INFO
+
+	for (size_t i = 0 ; i < argpar->args.size ; i++)
+	{
+		const APC_ArgInfo *info = cvec_get(&argpar->args, i);
+
+		cstr_clear(&tmpContent);
+
+		// Example:
+		// help [ --help|-h ]; Show this help
+		cstr_add(&tmpContent, info->id);
+		if (!info->required) cstr_add(&tmpContent, " [ ");
+		cstr_add(&tmpContent, info->param);
+		cstr_add(&tmpContent, "|");
+		cstr_add(&tmpContent, info->sparam);
+		if (!info->required) cstr_add(&tmpContent, "]");
+		cstr_add(&tmpContent, "; ");
+		cstr_add(&tmpContent, info->help);
+		cstr_add(&tmpContent, "\n");
+
+		cstr_add(&docs, tmpContent.data);
+	}
+
+    //
+
     // Lower info
     cstr_clear(&tmpContent);
     cstr_add(&tmpContent, "${ITALIC}");
