@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "cvec/cvec.h"
-#include "../APC_config.h"
 
 #ifdef __cplusplus
 # 	define __APC_CPP_GUARD_OPEN 		extern "C" {
@@ -15,16 +14,6 @@
 #endif // __cplusplus 
 
 __APC_CPP_GUARD_OPEN
-
-#define APC_STYLE_RESET 				"\033[0m"
-#define APC_STYLE_BOLD 					"\033[1m"
-#define APC_STYLE_ITALIC				"\033[3m"
-#define APC_STYLE_UNDERLINE 			"\033[4m"
-#define APC_STYLE_STRIKETRHOUGH 		"\033[9m"
-
-#define APC_STYLECOLOR_TITLE 			"${245,245,245}" // rgb(245,245,245)
-#define APC_STYLECOLOR_IMPORTANT		"${255,71,76}" // rgb(255,71,76)
-#define APC_STYLECOLOR_WARNING			"${255,255,40}" // rgb(255,255,40)
 
 enum APC_RGB_Command
 {

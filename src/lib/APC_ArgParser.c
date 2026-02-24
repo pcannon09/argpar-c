@@ -2,6 +2,7 @@
 #include "../../inc/argpar-c/lib/APC_ArgParser.h"
 
 #include "../../inc/argpar-c/APCpredefines.h"
+#include "../../inc/argpar-c/APC_config.h"
 
 #include "cstr/cstr.h"
 
@@ -280,7 +281,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
     char *result = NULL;
 
     // Title
-    cstr_set(&tmpContent, "");
+    cstr_clear(&tmpContent);
     cstr_add(&tmpContent, APC_STYLECOLOR_TITLE "${BOLD}");
     cstr_add(&tmpContent, title ? title : "");
     cstr_add(&tmpContent, "${R}\n");
@@ -294,7 +295,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
     }
 
     // Top info
-    cstr_set(&tmpContent, "");
+    cstr_clear(&tmpContent);
     cstr_add(&tmpContent, "${ITALIC}");
     cstr_add(&tmpContent, topInfo ? topInfo : "");
     cstr_add(&tmpContent, "${R}\n");
@@ -308,7 +309,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
     }
 
     // Lower info
-    cstr_set(&tmpContent, "");
+    cstr_clear(&tmpContent);
     cstr_add(&tmpContent, "${ITALIC}");
     cstr_add(&tmpContent, lowerInfo ? lowerInfo : "");
     cstr_add(&tmpContent, "${R}");
