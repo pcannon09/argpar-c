@@ -25,6 +25,7 @@ APC_ArgInfo apc_initInfo(void)
 {
 	APC_ArgInfo info = {0};
 	info.aliases = cvec_init(-1, sizeof(const char*));
+	info.required = false;
 
 	return info;
 }
@@ -103,34 +104,34 @@ char *__apc_setRGB(int r, int g, int b)
 	if (g < 0 || g > 255) return NULL;
 	if (b < 0 || b > 255) return NULL;
 
-    CSTR formatted = cstr_init();
+	CSTR formatted = cstr_init();
 
-    char tmp[16];
+	char tmp[16];
 
-    cstr_set(&formatted, "\033[38;2;");
+	cstr_set(&formatted, "\033[38;2;");
 
-    snprintf(tmp, sizeof(tmp), "%u", r);
-    cstr_add(&formatted, tmp);
-    cstr_add(&formatted, ";");
+	snprintf(tmp, sizeof(tmp), "%u", r);
+	cstr_add(&formatted, tmp);
+	cstr_add(&formatted, ";");
 
-    snprintf(tmp, sizeof(tmp), "%u", g);
-    cstr_add(&formatted, tmp);
-    cstr_add(&formatted, ";");
+	snprintf(tmp, sizeof(tmp), "%u", g);
+	cstr_add(&formatted, tmp);
+	cstr_add(&formatted, ";");
 
-    snprintf(tmp, sizeof(tmp), "%u", b);
-    cstr_add(&formatted, tmp);
-    cstr_add(&formatted, "m");
+	snprintf(tmp, sizeof(tmp), "%u", b);
+	cstr_add(&formatted, tmp);
+	cstr_add(&formatted, "m");
 
-    char *ret = CSTR_sys_strdup(formatted.data);
+	char *ret = CSTR_sys_strdup(formatted.data);
 
-    cstr_destroy(&formatted);
+	cstr_destroy(&formatted);
 
-    return ret;
+	return ret;
 }
 
 APC_RGB __apc_rgbToRGBStruct(const char *rgbStr)
 {
-    APC_RGB rgb = {0};
+	APC_RGB rgb = {0};
  	rgb.__externalAction = APC_RGB_Command_None;
 
 	// Reset terminal styles
@@ -179,20 +180,20 @@ APC_RGB __apc_rgbToRGBStruct(const char *rgbStr)
 		return rgb;
 	}
 
-    if (!rgbStr)
-        return rgb;
+	if (!rgbStr)
+		return rgb;
 
-    int r, g, b;
+	int r, g, b;
 
-    // Get format: ${r,g,b}
-    if (sscanf(rgbStr, "${%d,%d,%d}", &r, &g, &b) == 3)
-    {
-        if (r >= 0 && r <= 255) rgb.r = (unsigned char)r;
-        if (g >= 0 && g <= 255) rgb.g = (unsigned char)g;
-        if (b >= 0 && b <= 255) rgb.b = (unsigned char)b;
-    }
+	// Get format: ${r,g,b}
+	if (sscanf(rgbStr, "${%d,%d,%d}", &r, &g, &b) == 3)
+	{
+		if (r >= 0 && r <= 255) rgb.r = (unsigned char)r;
+		if (g >= 0 && g <= 255) rgb.g = (unsigned char)g;
+		if (b >= 0 && b <= 255) rgb.b = (unsigned char)b;
+	}
 
-    return rgb;
+	return rgb;
 }
 
 char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg)
@@ -298,47 +299,47 @@ char *__apc_colorFormat(APC_ArgParser *argpar, const char *msg)
 }
 
 char *apc_generateHelp(APC_ArgParser *argpar,
-                       const char *title,
-                       const char *topInfo,
-                       const char *lowerInfo)
+					   const char *title,
+					   const char *topInfo,
+					   const char *lowerInfo)
 {
-    CSTR docs = cstr_init();
-    cstr_set(&docs, "");
+	CSTR docs = cstr_init();
+	cstr_set(&docs, "");
 
-    CSTR tmpContent = cstr_init();
-    cstr_set(&tmpContent, "");
+	CSTR tmpContent = cstr_init();
+	cstr_set(&tmpContent, "");
 
-    char *result = NULL;
+	char *result = NULL;
 
-    // Title
-    cstr_clear(&tmpContent);
-    cstr_add(&tmpContent, APC_STYLECOLOR_TITLE "${BOLD}");
-    cstr_add(&tmpContent, title ? title : "");
-    cstr_add(&tmpContent, "${R}\n");
+	// Title
+	cstr_clear(&tmpContent);
+	cstr_add(&tmpContent, APC_STYLECOLOR_TITLE "${BOLD}");
+	cstr_add(&tmpContent, title ? title : "");
+	cstr_add(&tmpContent, "${R}\n");
 
-    result = __apc_colorFormat(argpar, tmpContent.data);
+	result = __apc_colorFormat(argpar, tmpContent.data);
 
-    if (result)
-    {
-        cstr_add(&docs, result);
-        APC_FREE(result);
-    }
+	if (result)
+	{
+		cstr_add(&docs, result);
+		APC_FREE(result);
+	}
 
-    // Top info
-    cstr_clear(&tmpContent);
-    cstr_add(&tmpContent, "${ITALIC}");
-    cstr_add(&tmpContent, topInfo ? topInfo : "");
-    cstr_add(&tmpContent, "${R}\n");
+	// Top info
+	cstr_clear(&tmpContent);
+	cstr_add(&tmpContent, "${ITALIC}");
+	cstr_add(&tmpContent, topInfo ? topInfo : "");
+	cstr_add(&tmpContent, "${R}\n");
 
-    result = __apc_colorFormat(argpar, tmpContent.data);
+	result = __apc_colorFormat(argpar, tmpContent.data);
 
-    if (result)
-    {
-        cstr_add(&docs, result);
-        APC_FREE(result);
-    }
+	if (result)
+	{
+		cstr_add(&docs, result);
+		APC_FREE(result);
+	}
 
-    // MAIN INFO
+	// MAIN INFO
 
 	for (size_t i = 0 ; i < argpar->args.size ; i++)
 	{
@@ -347,13 +348,50 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		cstr_clear(&tmpContent);
 
 		// Example:
-		// help [ --help|-h ]; Show this help
+		// help [ --help|-h|-? ]; Show this help
 		cstr_add(&tmpContent, info->id);
-		if (!info->required) cstr_add(&tmpContent, " [ ");
+
+		// Open optional
+		if (!info->required)
+		{
+			char *parsedColor = __apc_colorFormat(argpar, APC_STYLECOLOR_OPTIONAL);
+
+			cstr_add(&tmpContent, parsedColor);
+		 	cstr_add(&tmpContent, " [ ");
+
+		 	APC_FREE(parsedColor);
+		}
+
 		cstr_add(&tmpContent, info->param);
-		cstr_add(&tmpContent, "|");
-		cstr_add(&tmpContent, info->sparam);
-		if (!info->required) cstr_add(&tmpContent, " ]");
+
+		if (strlen(info->sparam) > 0) 
+		{
+			cstr_add(&tmpContent, "|");
+			cstr_add(&tmpContent, info->sparam);
+		}
+
+		for (size_t i = 0 ; i < info->aliases.size ; i++)
+		{
+			const char **aliasName = cvec_get(&info->aliases, i);
+
+			if (!aliasName && !*aliasName)
+				continue;
+
+			cstr_add(&tmpContent, "|");
+			cstr_add(&tmpContent, *aliasName);
+		}
+
+		// Close optional
+		if (!info->required)
+		{
+			char *parsedColor = __apc_colorFormat(argpar, "${R}");
+
+			cstr_add(&tmpContent, " ]");
+			cstr_add(&tmpContent, parsedColor);
+
+		 	APC_FREE(parsedColor);
+		}
+
 		cstr_add(&tmpContent, "; ");
 		cstr_add(&tmpContent, info->help);
 		cstr_add(&tmpContent, "\n");
@@ -361,27 +399,27 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		cstr_add(&docs, tmpContent.data);
 	}
 
-    //
+	//
 
-    // Lower info
-    cstr_clear(&tmpContent);
-    cstr_add(&tmpContent, "${ITALIC}");
-    cstr_add(&tmpContent, lowerInfo ? lowerInfo : "");
-    cstr_add(&tmpContent, "${R}");
+	// Lower info
+	cstr_clear(&tmpContent);
+	cstr_add(&tmpContent, "${ITALIC}");
+	cstr_add(&tmpContent, lowerInfo ? lowerInfo : "");
+	cstr_add(&tmpContent, "${R}");
 
-    result = __apc_colorFormat(argpar, tmpContent.data);
+	result = __apc_colorFormat(argpar, tmpContent.data);
 
-    if (result)
-    {
-        cstr_add(&docs, result);
-        APC_FREE(result);
-    }
+	if (result)
+	{
+		cstr_add(&docs, result);
+		APC_FREE(result);
+	}
 
-    char *data = CSTR_sys_strdup(docs.data);
+	char *data = CSTR_sys_strdup(docs.data);
 
-    cstr_destroy(&docs);
-    cstr_destroy(&tmpContent);
+	cstr_destroy(&docs);
+	cstr_destroy(&tmpContent);
 
-    return data;
+	return data;
 }
 
