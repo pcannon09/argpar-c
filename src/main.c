@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 	else if (apc_get(&parser, "help"))
 	{
 		const char *licenseMessage =
-			"\n\nArgPar-C Copyright (C) 2026  pcannon09\n"
+			"\nArgPar-C Copyright (C) 2026  pcannon09\n"
     		"This program comes with ABSOLUTELY NO WARRANTY; for details type `./run.sh --help'.\n"
     		"This is free software, and you are welcome to redistribute it\n"
     		"under certain conditions; type `./run.sh --help' for details.";
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		char *helpMsg = apc_generateHelp(
 				&parser,
 				"APC Help",
-				"ArgParser-C help information and demo\nCheck the code for more information",
+				"ArgParser-C help information and demo\nCheck the code for more information\n",
 				licenseMessage);
 
 		printf("%s\n", helpMsg);
