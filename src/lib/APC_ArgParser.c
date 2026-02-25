@@ -349,6 +349,8 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 
 		// Example:
 		// help [ --help|-h|-? ]; Show this help
+		// Structure:
+		// {ID} [ {param1}|{param2}|{alias1}|{alias2}|{...} ]; {Description}
 		cstr_add(&tmpContent, info->id);
 
 		// Open optional
