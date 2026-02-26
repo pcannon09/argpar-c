@@ -9,11 +9,20 @@ PROJECT_INFO_PATH=".private/project.json"
 
 projectName=$(jq -r '.exeName' $PROJECT_INFO_PATH)
 
+readonly MAIN_FILE="build/${projectName}_exec"
+
 if [[ "$1" == "GDB" ]]; then
-	gdb ./build/${projectName}_exec
+	if [ -f "$MAIN_FILE" ]; then
+		eval "gdb ./$MAIN_FILE $@"
+	else
+		eval "gdb ./$MAIN_FILE.exe $@"
+	fi
 
 else
-	./build/${projectName}_exec "$@"
-
+	if [ -f "$MAIN_FILE" ]; then
+		eval "./$MAIN_FILE $@"
+	else
+		eval "./$MAIN_FILE.exe $@"
+	fi
 fi
 
