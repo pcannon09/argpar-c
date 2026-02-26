@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "cvec/cvec.h"
+#include "../../../vendor/cvec/inc/cvec/cvec.h"
 
 #ifdef __cplusplus
 # 	define __APC_CPP_GUARD_OPEN 		extern "C" {

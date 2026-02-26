@@ -4,7 +4,7 @@
 #include "../../inc/argpar-c/APCpredefines.h"
 #include "../../inc/argpar-c/APC_config.h"
 
-#include "cstr/cstr.h"
+#include "../../vendor/cstr/inc/cstr/cstr.h"
 
 #include <unistd.h>
 #include <stdlib.h>
