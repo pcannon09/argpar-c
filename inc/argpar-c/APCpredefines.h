@@ -11,11 +11,11 @@
 #define APC_DEFAULT_C_STD			201112L
 
 // Versioning
-#define APC_VERSION_MAJOR            0
+#define APC_VERSION_MAJOR            1
 #define APC_VERSION_MINOR            0
-#define APC_VERSION_PATCH            1
+#define APC_VERSION_PATCH            0
 
-#define APC_VERSION_STD              0L
+#define APC_VERSION_STD              20260226L
 
 // Version states:
 // * dev

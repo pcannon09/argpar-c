@@ -2,7 +2,7 @@
 
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "ArgPar-C"
-PROJECT_NUMBER         = v1.2.0-build
+PROJECT_NUMBER         = v1.0.0-build
 PROJECT_BRIEF          = "Simple and powerful Argument Parser for C"
 OUTPUT_DIRECTORY       = docs/
 CREATE_SUBDIRS         = YES
