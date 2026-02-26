@@ -71,6 +71,17 @@ if [ "$enableBackup" == "YES" ] || [ "$enableBackup" == "yes" ] || [ "$enableBac
 fi
 
 if [ "$1" == "setup" ]; then
+	if [ "$2" != "ndev" ]; then
+		SYSTEM_NAME="$2"
+
+	else
+		if [ ! -z "$3" ]; then
+			SYSTEM_NAME="$3"
+		fi
+	fi
+
+	echo $SYSTEM_NAME
+
 	for macro in "${compileMacros[@]}"; do
 		if [ -n "$macro" ]; then
 			if [[ "$macro" != *=* ]]; then
@@ -83,8 +94,7 @@ if [ "$1" == "setup" ]; then
 		fi
 	done
 
-	cmakeCommand="cmake -S . -B build -G Ninja -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS=\"$compilerFlags\""
-	cmakeCommand="cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS=\"$compilerFlags\""
+	cmakeCommand="cmake -S . -B build -G Ninja -DCMAKE_SYSTEM_NAME=${SYSTEM_NAME}  -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_CXX_FLAGS=\"$compilerFlags\""
 
 	echo -e "${BRIGHT_BLUE}${BOLD}[ * ] Running CMake:\n$cmakeCommand${RESET}"
 	eval "$cmakeCommand"
