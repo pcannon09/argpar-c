@@ -1,0 +1,5 @@
+CSTR has been modified for compatibility with ArgPar-C
+
+This includes changes in the following files:
+* CMakeLists.txt -- Removed all ASAN and LSAN
+
