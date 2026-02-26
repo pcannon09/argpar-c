@@ -32,6 +32,18 @@ set(CMAKE_COLOR_MAKEFILE ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_CROSSCOMPILING)
+	set(WINDOWS_PLATFORM YES)
+else()
+	set(WINDOWS_PLATFORM NO)
+endif()
+
+message(WARNING ${WINDOWS_PLATFORM})
+message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
+message(STATUS "WIN32 = ${WIN32}")
+message(STATUS "MINGW = ${MINGW}")
+message(STATUS "MSVC = ${MSVC}")
+
 # Directories
 
 set(SRC_DIR   "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -57,6 +69,8 @@ add_library(${projectName} STATIC ${SOURCES} ${HEADERS})
 add_library(${projectName}::${projectName} ALIAS ${projectName})
 
 target_include_directories(${projectName}
+	PRIVATE ${VENDOR_INC_PATHS}
+
 	PUBLIC
 		$<BUILD_INTERFACE:${INC_DIR}>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/${projectName}>
@@ -80,8 +94,8 @@ target_compile_features(${projectName} PUBLIC c_std_${C_STD})
 
 # Compiler Warnings
 
-if(MSVC)
-	target_compile_options(${projectName} PRIVATE /W4)
+if(${WINDOWS_PLATFORM})
+	target_compile_options(${projectName} PRIVATE)
 else()
 	target_compile_options(${projectName} PRIVATE
 		-Wall -Wextra -Wpedantic
@@ -104,7 +118,7 @@ target_link_libraries(${projectName}_exec PRIVATE
 		cstr_static
 )
 
-if(NOT MSVC)
+if(NOT ${WINDOWS_PLATFORM})
 	target_compile_options(${projectName} PRIVATE
 		$<$<CONFIG:Debug>:-g>
 		$<$<CONFIG:Release>:-O3>
@@ -127,7 +141,7 @@ endif()
 # Optional sanitizers (only for Debug and only on supported compilers)
 option(ENABLE_SANITIZER "Enable address sanitizer in Debug builds" ON)
 
-if(ENABLE_SANITIZER AND NOT MSVC)
+if(ENABLE_SANITIZER AND NOT ${WINDOWS_PLATFORM})
 	target_compile_options(${projectName} PRIVATE
 		$<$<CONFIG:Debug>:-fsanitize=address,leak>
 	)
@@ -147,8 +161,16 @@ endif()
 
 # Executables
 
+set(VENDOR_INC_PATHS
+		${VENDOR_DIR}/cvec/inc/cvec
+		${VENDOR_DIR}/cstr/inc/cstr
+)
+
 add_subdirectory(${VENDOR_DIR}/cvec cvec)
 add_subdirectory(${VENDOR_DIR}/cstr cstr)
+
+include_directories(${VENDOR_DIR}/cvec)
+include_directories(${VENDOR_DIR}/cstr)
 
 set_target_properties(
 	${projectName}
