@@ -60,8 +60,7 @@ bool apc_add(APC_ArgParser *argpar, APC_ArgInfo info)
 
 bool apc_get(APC_ArgParser *argpar, const char *id)
 {
-	if (id[0] == '\0'  || !id ||
-			!argpar)
+	if (!id || id[0] == '\0' || !argpar)
 		return false;
 
 	// Check main CVEC ARGS
@@ -77,8 +76,8 @@ bool apc_get(APC_ArgParser *argpar, const char *id)
 		// Check ARGV from apc_init() function
 		for (int argv = 0 ; argv < argpar->argc ; argv++)
 		{
-			if (strcmp(argpar->argv[argv], info->param) == 0 ||
-				strcmp(argpar->argv[argv], info->sparam) == 0)
+			if ((info->param && strcmp(argpar->argv[argv], info->param) == 0) ||
+				(info->sparam && strcmp(argpar->argv[argv], info->sparam) == 0))
 				return true;
 
 			// Parse aliases
@@ -86,7 +85,7 @@ bool apc_get(APC_ArgParser *argpar, const char *id)
 			{
 				char **alias = cvec_get(&info->aliases, a);
 
-				if (!alias && !*alias)
+				if (!alias || !*alias)
 					continue;
 
 				if (strcmp(argpar->argv[argv], *alias) == 0)
@@ -351,7 +350,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		// help [ --help|-h|-? ]; Show this help
 		// Structure:
 		// {ID} [ {param1}|{param2}|{alias1}|{alias2}|{...} ]; {Description}
-		cstr_add(&tmpContent, info->id);
+		cstr_add(&tmpContent, info->id ? info->id : "");
 
 		// Open optional
 		if (!info->required)
@@ -364,23 +363,26 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		 	APC_FREE(parsedColor);
 		}
 
-		cstr_add(&tmpContent, info->param);
+		cstr_add(&tmpContent, info->param ? info->param : "");
 
-		if (strlen(info->sparam) > 0) 
+		if (info->sparam && strlen(info->sparam) > 0) 
 		{
 			cstr_add(&tmpContent, "|");
-			cstr_add(&tmpContent, info->sparam);
+			cstr_add(&tmpContent, info->sparam ? info->sparam : "");
 		}
 
-		for (size_t i = 0 ; i < info->aliases.size ; i++)
+		for (size_t i = 0; i < info->aliases.size; i++)
 		{
 			const char **aliasName = cvec_get(&info->aliases, i);
 
-			if (!aliasName && !*aliasName)
-				continue;
+			if (!aliasName) continue;
+
+			const char *alias = *aliasName;
+
+			if (!alias) continue;
 
 			cstr_add(&tmpContent, "|");
-			cstr_add(&tmpContent, *aliasName);
+			cstr_add(&tmpContent, alias);
 		}
 
 		// Close optional
@@ -395,7 +397,7 @@ char *apc_generateHelp(APC_ArgParser *argpar,
 		}
 
 		cstr_add(&tmpContent, "; ");
-		cstr_add(&tmpContent, info->help);
+		cstr_add(&tmpContent, info->help ? info->help : "");
 		cstr_add(&tmpContent, "\n");
 
 		cstr_add(&docs, tmpContent.data);
