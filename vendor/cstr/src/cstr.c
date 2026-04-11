@@ -70,110 +70,110 @@ static int __cstr_setFormat(CSTR *_str, const char *_fmt, ...)
 
 CSTR cstr_init(void)
 {
-    const char *initData = "";
-    const unsigned int initialLen = strlen(initData); // 0
+	const char *initData = "";
+	const unsigned int initialLen = strlen(initData); // 0
 
-    CSTR str;
+	CSTR str;
 
-    str.data = malloc(initialLen + 1);  // allocate space for null terminator
+	str.data = malloc(initialLen + 1);  // allocate space for null terminator
 
-    if (!str.data)
-    {
-        str.initialized = false;
+	if (!str.data)
+	{
+		str.initialized = false;
 
-        return str;
-    }
+		return str;
+	}
 
-    // Initialize the string data with an empty string
-    str.data[0] = '\0';
+	// Initialize the string data with an empty string
+	str.data[0] = '\0';
 
-    str.len = initialLen;         // Should be: 0
-    str.cap = initialLen + 1;     // Should be: 1
-    str.forceCap = false;
-    str.initialized = true;
+	str.len = initialLen;		 // Should be: 0
+	str.cap = initialLen + 1;	 // Should be: 1
+	str.forceCap = false;
+	str.initialized = true;
 
-    return str;
+	return str;
 }
 
 int cstr_destroy(CSTR *_str)
 {
 	// Fail directly if the `_str` pointer is NULL
-    if (!_str || !_str->data)
-    	return CSTR_FAIL;
+	if (!_str || !_str->data)
+		return CSTR_FAIL;
 
-    free(_str->data);
+	CSTR_FREE(_str->data);
 
-    _str->data = NULL;
-    _str->len = 0;
-    _str->cap = 0;
-    _str->initialized = false;
-    _str->forceCap = false;
+	_str->data = NULL;
+	_str->len = 0;
+	_str->cap = 0;
+	_str->initialized = false;
+	_str->forceCap = false;
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_set(CSTR *_str, const char *_data)
 {
-    if (!_str || !_data) return CSTR_FAIL;
+	if (!_str || !_data) return CSTR_FAIL;
 
-    size_t newLen = strlen(_data);
+	size_t newLen = strlen(_data);
 
-    // Prevent overflow if forceCap is true
-    if (_str->forceCap && newLen >= _str->cap)
-        return CSTR_FORCECAP_LIMIT;
+	// Prevent overflow if forceCap is true
+	if (_str->forceCap && newLen >= _str->cap)
+		return CSTR_FORCECAP_LIMIT;
 
-    char *newData;
+	char *newData;
 
-    if (_str->forceCap) newData = _str->data; // Use existing buffer
-    else
-    {
-        newData = realloc(_str->data, newLen + 1); // Reallocate to fit new string
+	if (_str->forceCap) newData = _str->data; // Use existing buffer
+	else
+	{
+		newData = realloc(_str->data, newLen + 1); // Reallocate to fit new string
 
-        if (!newData) return CSTR_FAIL;
+		if (!newData) return CSTR_FAIL;
 
-        _str->data = newData;
+		_str->data = newData;
 
-    	__cstr_updateCap(_str);
-    }
+		__cstr_updateCap(_str);
+	}
 
-    strcpy(_str->data, _data);
+	strcpy(_str->data, _data);
 
-    _str->len = newLen;
+	_str->len = newLen;
 
-    __cstr_updateCap(_str);
+	__cstr_updateCap(_str);
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_add(CSTR *_str, const char *_suffix)
 {
-    if (!_str || !_suffix) return CSTR_FAIL;
+	if (!_str || !_suffix) return CSTR_FAIL;
 
-    size_t suffixLen = strlen(_suffix);
-    size_t newLen = _str->len + suffixLen;
+	size_t suffixLen = strlen(_suffix);
+	size_t newLen = _str->len + suffixLen;
 
-    // Prevent overflow if forceCap is true
-    if (_str->forceCap && newLen >= _str->cap) 
-        return CSTR_FORCECAP_LIMIT;
+	// Prevent overflow if forceCap is true
+	if (_str->forceCap && newLen >= _str->cap) 
+		return CSTR_FORCECAP_LIMIT;
 
-    if (!_str->forceCap) 
-    {
-        char *newData = realloc(_str->data, newLen + 1); // + 1 for NULL terminator
-        if (!newData) return CSTR_FAIL;
+	if (!_str->forceCap) 
+	{
+		char *newData = realloc(_str->data, newLen + 1); // + 1 for NULL terminator
+		if (!newData) return CSTR_FAIL;
 
-        _str->data = newData;
+		_str->data = newData;
 
-    	__cstr_updateCap(_str);
-    }
+		__cstr_updateCap(_str);
+	}
 
-    // Safe concatenation including null terminator
-    memcpy(_str->data + _str->len, _suffix, suffixLen + 1); // +1 to copy null terminator
+	// Safe concatenation including null terminator
+	memcpy(_str->data + _str->len, _suffix, suffixLen + 1); // +1 to copy null terminator
 
-    _str->len = newLen;
+	_str->len = newLen;
 
-    __cstr_updateCap(_str);
+	__cstr_updateCap(_str);
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_clear(CSTR *_str)
@@ -234,7 +234,7 @@ int cstr_insert(CSTR *_str, const char *_data, size_t _pos)
 
 	_str->len = newLen;
 
-    __cstr_updateCap(_str);
+	__cstr_updateCap(_str);
 
 	return CSTR_SUCCESS;
 }
@@ -278,7 +278,7 @@ int cstr_substr(CSTR *_str, size_t _start, size_t _len)
 	memcpy(buff, _str->data + _start, actualLen);
 	buff[actualLen] = '\0';
 
-	free(_str->data); _str->data = NULL;
+	CSTR_FREE(_str->data);
 
 	_str->data = buff;
 	_str->len = actualLen;
@@ -306,107 +306,107 @@ int cstr_initCopy(CSTR *_dest, const char *_src)
 
 int cstr_replace(CSTR *_str, const char *_old, const char *_new)
 {
-    if (!_str) return CSTR_FAIL;
+	if (!_str) return CSTR_FAIL;
 
-    size_t oldPosFound = cstr_find(_str, _old);
+	size_t oldPosFound = cstr_find(_str, _old);
 
-    if (oldPosFound != CSTR_SUCCESS) return oldPosFound;
+	if (oldPosFound != CSTR_SUCCESS) return oldPosFound;
 
 	// MAIN
-    CSTR totalStr; 	cstr_initCopy(&totalStr, _str->data);
-    CSTR newStr; 	cstr_initCopy(&newStr, _str->data);
+	CSTR totalStr; 	cstr_initCopy(&totalStr, _str->data);
+	CSTR newStr; 	cstr_initCopy(&newStr, _str->data);
 
-    unsigned int oldRet = cstr_substr(&totalStr, 0, oldPosFound);
+	unsigned int oldRet = cstr_substr(&totalStr, 0, oldPosFound);
 
-    if (oldRet) { printf("cstr_replace() 1: Error calling cstr_substr(), code: %u\n", oldRet); exit(oldRet); }
+	if (oldRet) { printf("cstr_replace() 1: Error calling cstr_substr(), code: %u\n", oldRet); exit(oldRet); }
 
-    // Only compute the `rest` if there is a `rest`
-    size_t restStart = oldPosFound + strlen(_old);
+	// Only compute the `rest` if there is a `rest`
+	size_t restStart = oldPosFound + strlen(_old);
 
 	// If the start of `rest` is smaller than the length of newStr
-    if (restStart < newStr.len)
-    {
-        unsigned int newRet = cstr_substr(&newStr, restStart, newStr.len);
+	if (restStart < newStr.len)
+	{
+		unsigned int newRet = cstr_substr(&newStr, restStart, newStr.len);
 
-        if (newRet) { printf("cstr_replace() 2: Error calling cstr_substr(), code: %u\n", newRet); exit(newRet); }
-    }
+		if (newRet) { printf("cstr_replace() 2: Error calling cstr_substr(), code: %u\n", newRet); exit(newRet); }
+	}
 
 	// Just clear `newStr` var
-    else cstr_set(&newStr, "");
+	else cstr_set(&newStr, "");
 
-    cstr_add(&totalStr, _new);          // Add replacement
-    cstr_add(&totalStr, newStr.data);   // Append rest (may also be empty)
+	cstr_add(&totalStr, _new);		  // Add replacement
+	cstr_add(&totalStr, newStr.data);   // Append rest (may also be empty)
 
-    cstr_destroy(&totalStr);
-    cstr_destroy(&newStr);
+	cstr_destroy(&totalStr);
+	cstr_destroy(&newStr);
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_replaceAll(CSTR *_str, const char *_old, const char *_new)
 {
-    if (!_str || !_old || !_new) return CSTR_FAIL;
-    if (_old[0] == '\0') return CSTR_FAIL; // avoid infinite loop
+	if (!_str || !_old || !_new) return CSTR_FAIL;
+	if (_old[0] == '\0') return CSTR_FAIL; // avoid infinite loop
 
-    size_t oldLen = strlen(_old);
+	size_t oldLen = strlen(_old);
 
-    CSTR original;
-    cstr_initCopy(&original, _str->data);
+	CSTR original;
+	cstr_initCopy(&original, _str->data);
 
-    CSTR result = cstr_init();
-    size_t pos = 0;
+	CSTR result = cstr_init();
+	size_t pos = 0;
 
-    while (1)
-    {
-        size_t found = cstr_findFrom(&original, _old, pos);
+	while (1)
+	{
+		size_t found = cstr_findFrom(&original, _old, pos);
 
-        if (found == CSTR_NPOS) break;
+		if (found == CSTR_NPOS) break;
 
-        // Copy everything to `found`
-        char saved = original.data[found];
-        original.data[found] = '\0';
+		// Copy everything to `found`
+		char saved = original.data[found];
+		original.data[found] = '\0';
 
-        cstr_add(&result, original.data + pos);
+		cstr_add(&result, original.data + pos);
 
-        original.data[found] = saved;
+		original.data[found] = saved;
 
-        // Add replacement
-        cstr_add(&result, _new);
+		// Add replacement
+		cstr_add(&result, _new);
 
-        pos = found + oldLen;
-    }
+		pos = found + oldLen;
+	}
 
-    // Add the rest of the original string
-    if (pos < original.len)
-        cstr_add(&result, original.data + pos);
+	// Add the rest of the original string
+	if (pos < original.len)
+		cstr_add(&result, original.data + pos);
 
-    // Replace original CSTR with result
-    cstr_destroy(_str);
-    *_str = result;
+	// Replace original CSTR with result
+	cstr_destroy(_str);
+	*_str = result;
 
-    cstr_destroy(&original);
+	cstr_destroy(&original);
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_erase(CSTR *_str, int pos, size_t len)
 {
-    if (!_str) return CSTR_FAIL;
-    if (pos < 0 || pos >= _str->len) return CSTR_FAIL;
-    if (len == 0) return CSTR_SUCCESS;
+	if (!_str) return CSTR_FAIL;
+	if (pos < 0 || pos >= _str->len) return CSTR_FAIL;
+	if (len == 0) return CSTR_SUCCESS;
 
-    if (pos + len > _str->len)
-        len = _str->len - pos;
+	if (pos + len > _str->len)
+		len = _str->len - pos;
 
-    memmove(
-        _str->data + pos,
-        _str->data + pos + len,
-        _str->len - (pos + len) + 1  // +1 for null terminator
-    );
+	memmove(
+		_str->data + pos,
+		_str->data + pos + len,
+		_str->len - (pos + len) + 1  // +1 for null terminator
+	);
 
-    _str->len -= len;
+	_str->len -= len;
 
-    return CSTR_SUCCESS;
+	return CSTR_SUCCESS;
 }
 
 int cstr_shrink(CSTR *_str, const size_t _len)
@@ -463,20 +463,20 @@ size_t cstr_countChar(const CSTR *_str, const char ch)
 
 size_t cstr_count(const CSTR *_str, const char *ch)
 {
-    if (!_str || !_str->data || !ch || !*ch)
-        return 0;
+	if (!_str || !_str->data || !ch || !*ch)
+		return 0;
 
-    size_t count = 0;
-    const char *p = _str->data;
-    size_t len = strlen(ch);
+	size_t count = 0;
+	const char *p = _str->data;
+	size_t len = strlen(ch);
 
-    while ((p = strstr(p, ch)) != NULL)
-    {
-        count++;
-        p += len;
-    }
+	while ((p = strstr(p, ch)) != NULL)
+	{
+		count++;
+		p += len;
+	}
 
-    return count;
+	return count;
 }
 
 size_t cstr_findFrom(const CSTR *_str, const char *_find, size_t pos)
@@ -506,24 +506,24 @@ size_t cstr_findFrom(const CSTR *_str, const char *_find, size_t pos)
 
 bool cstr_startsWith(CSTR str, const char *prefix)
 {
-    if (!str.data || !prefix) return false;
+	if (!str.data || !prefix) return false;
 
-    size_t plen = strlen(prefix);
+	size_t plen = strlen(prefix);
 
-    if (plen > str.len) return false;
+	if (plen > str.len) return false;
 
-    return strncmp(str.data, prefix, plen) == 0;
+	return strncmp(str.data, prefix, plen) == 0;
 }
 
 bool cstr_endsWith(CSTR str, const char *suffix)
 {
-    if (!str.data || !suffix) return false;
+	if (!str.data || !suffix) return false;
 
-    size_t slen = strlen(suffix);
+	size_t slen = strlen(suffix);
 
-    if (slen > str.len) return false;
+	if (slen > str.len) return false;
 
-    return strncmp(str.data + (str.len - slen), suffix, slen) == 0;
+	return strncmp(str.data + (str.len - slen), suffix, slen) == 0;
 }
 
 bool cstr_comp(const CSTR _s1, const CSTR _s2)
@@ -541,6 +541,24 @@ bool cstr_empty(const CSTR *_str)
 	if (_str->len <= 0) 					return true;
 
 	return false;
+}
+
+int __cstr_join(CSTR *_str, const char *_arr[], const size_t _count)
+{
+	if (!_str || !_str->data || !_arr)
+		return CSTR_FAIL;
+
+	int retCode = 0;
+
+	for (size_t i = 0 ; i < _count ; i++)
+	{
+		if (!_arr[i]) return CSTR_FAIL;
+
+		if ((retCode = cstr_add(_str, _arr[i]) != CSTR_SUCCESS))
+		    return retCode;
+	}
+
+	return CSTR_SUCCESS;
 }
 
 const char *cstr_bool(const bool _bool)

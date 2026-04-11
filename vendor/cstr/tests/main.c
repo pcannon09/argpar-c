@@ -69,8 +69,7 @@ int main(void)
 
 		cstr_destroy(&str);
 #else
-		printf("Cannot do: TEST 3\n");
-# 		warning "Cannot do: TEST 3"
+# 		warning "Cannot do TEST 3"
 #endif // defined(CSTR_ENABLE_GET_RETURN)
 	}
 
@@ -147,13 +146,17 @@ int main(void)
 
 	printf("TESTING 8\n");
 
-	{
 #ifdef CSTR_ENABLE_GET_CONST_RETURN
+	{
 		CSTR str = cstr_init();
 
 		cstr_set(&str, "Random data...");
 
-		printf("TMP DATA: %s\n", CSTR_GET_CONST_RETURN(str, cstr_fromInt, 12345).data);
+        CSTR tmpS;
+        cstr_initCopy(&tmpS, tmpS CSTR_CONST_RETURN_PTR_METHOD data);
+        cstr_fromInt(&tmpS, 12345);
+
+		printf("TMP DATA: %s\n", tmpS.data);
 		printf("CURRENT DATA: %s\n", str.data);
 
 		cstr_fromDouble(&str, 3.14159);
@@ -161,22 +164,24 @@ int main(void)
 		printf("DATA: %s\n", str.data);
 
 		cstr_destroy(&str);
+		cstr_destroy(&tmpS);
+	}
 #else
-		printf("Cannot do TEST 8\n");
 # 		warning "Cannot do TEST 8"
 #endif // CSTR_ENABLE_GET_CONST_RETURN
-	}
 
 	printf("TESTING 9\n");
 
 	{
 		CSTR str = cstr_init();
-		cstr_set(&str, "Hello world"); // NOTE: Comment OR Uncomment this line for more testing
+		cstr_set(&str, "Hello world");
 
 		printf("Is empty? %s\n", cstr_bool(cstr_empty(&str)));
 
 		cstr_destroy(&str);
 	}
+
+	printf("TESTING 10\n");
 
 	{
 		CSTR str = cstr_init();
@@ -192,6 +197,8 @@ int main(void)
 		cstr_destroy(&str);
 	}
 
+	printf("TESTING 11\n");
+
 	{
 		CSTR str = cstr_init();
 
@@ -204,7 +211,19 @@ int main(void)
 		printf("There are: %i\n", counts);
 
 		cstr_destroy(&str);
+	}
 
+	printf("TESTING 12\n");
+
+	{
+		CSTR str = cstr_init();
+
+		cstr_join(&str, "Hello", " world", ", How are you");
+
+		printf("Full joined string using array:\n");
+		printf("%s\n", str.data);
+
+		cstr_destroy(&str);
 	}
 
 	return 0;

@@ -11,10 +11,10 @@
 
 // Versioning
 #define CSTR_VERSION_MAJOR            1
-#define CSTR_VERSION_MINOR            1
-#define CSTR_VERSION_PATCH            1
+#define CSTR_VERSION_MINOR            2
+#define CSTR_VERSION_PATCH            0
 
-#define CSTR_VERSION_STD              20251202
+#define CSTR_VERSION_STD              20260303
 
 // Version states:
 // * dev
@@ -34,6 +34,8 @@
 #ifndef CSTR_DEV
 #   define CSTR_DEV 1
 #endif
+
+#define CSTR_FREE(x) free(x); x = NULL
 
 #if defined(WIN32) || defined(_WIN32)
 #	define CSTR_OS_WIN32

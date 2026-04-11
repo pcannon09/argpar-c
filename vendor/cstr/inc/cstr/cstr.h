@@ -5,14 +5,14 @@
 #include "CSTRpredefines.h"
 
 #ifdef __cplusplus
-# 	define __FSI_DIRUTILS_CSTR_CPP_OPEN 		extern "C" {
-# 	define __FSI_DIRUTILS_CSTR_CPP_CLOSE 		}
+# 	define __CSTR_DIRUTILS_CSTR_CPP_OPEN 		extern "C" {
+# 	define __CSTR_DIRUTILS_CSTR_CPP_CLOSE 		}
 #else
-# 	define __FSI_DIRUTILS_CSTR_CPP_OPEN
-# 	define __FSI_DIRUTILS_CSTR_CPP_CLOSE
+# 	define __CSTR_DIRUTILS_CSTR_CPP_OPEN
+# 	define __CSTR_DIRUTILS_CSTR_CPP_CLOSE
 #endif // __cplusplus
 
-__FSI_DIRUTILS_CSTR_CPP_OPEN
+__CSTR_DIRUTILS_CSTR_CPP_OPEN
 
 #ifdef __CSTR_OK
 # 	undef __CSTR_OK
@@ -161,6 +161,15 @@ int cstr_destroy(CSTR *_str);
  * @return CSTR_SUCCESS, CSTR_FAIL, or CSTR_FORCECAP_LIMIT
  */
 int cstr_set(CSTR *_str, const char *_data);
+
+/**
+ * @brief Add content using an array (From Private API)
+ * @param _str Pointer to the CSTR to modify
+ * @param _arr Array to add to the string
+ * @param count The size of the array
+ * @return CSTR_SUCCESS, CSTR_FAIL, or others from the `cstr_add()` function
+ */
+int __cstr_join(CSTR *_str, const char *_arr[], const size_t _count);
 
 /**
  * @brief Append a suffix to the end of a CSTR
@@ -385,6 +394,20 @@ const char *cstr_bool(const bool _bool);
  */
 bool cstr_empty(const CSTR *_str);
 
+/**
+ * @brief `__cstr_join()` function wrapper
+ *  USAGE: cstr_join(&str, "param1", "param2")
+ * @param _str CSTR to modify
+ * @param ... Extra params to add
+ * @return Same return as `__cstr_join()` function
+ */
+#define cstr_join(_str, ...) \
+    ({ \
+        const char *__arr[] = { __VA_ARGS__ }; \
+        const size_t __count = sizeof(__arr) / sizeof(__arr[0]); \
+        __cstr_join(_str, __arr, __count); \
+    })
+
 #define __CSTR_OK
 
 #ifdef __CSTR_OK
@@ -401,8 +424,11 @@ bool cstr_empty(const CSTR *_str);
 # 	endif
 
 # 	ifdef CSTR_ENABLE_GET_CONST_RETURN
+static inline void CSTR_GET_CONST_RETURN_warning(void) __attribute__((deprecated("CSTR_GET_CONST_RETURN is no longer maintained; memory leaks can't be removed")));
+static inline void CSTR_GET_CONST_RETURN_warning(void) { }
 #       define CSTR_GET_CONST_RETURN(_str, _call, ...) \
         ({ \
+            CSTR_GET_CONST_RETURN_warning(); \
             CSTR tmpS; \
             cstr_initCopy(&tmpS, _str CSTR_CONST_RETURN_PTR_METHOD data); \
             _call(&tmpS, __VA_ARGS__); \
@@ -413,7 +439,7 @@ bool cstr_empty(const CSTR *_str);
 # 	endif // defined(CSTR_ENABLE_GET_CONST_RETURN)
 #endif // __CSTR_OK
 
-__FSI_DIRUTILS_CSTR_CPP_CLOSE
+__CSTR_DIRUTILS_CSTR_CPP_CLOSE
 
 #else
 # 	error "Must use C11 as the minimum standard"

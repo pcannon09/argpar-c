@@ -42,6 +42,7 @@ project(${projectName} VERSION ${projectVersion} LANGUAGES C)
 
 # Development mode flags
 set(DEV_COMPILE_FLAGS
+    -fsanitize=address,leak
     -g
     -Wunused
     -Wall
@@ -50,6 +51,7 @@ set(DEV_COMPILE_FLAGS
 )
 
 set(DEV_LINK_FLAGS
+    -fsanitize=address,leak
     -g
 )
 
