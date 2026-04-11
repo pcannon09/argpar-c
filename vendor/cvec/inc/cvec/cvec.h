@@ -279,13 +279,13 @@ bool __cvec_hasEnoughCap(const CVEC *_vec, const size_t _additions);
 /**/
 
 #define __CVEC_MACRO_MOD_CALL(func, vec, type, val) \
-({ \
+{ \
 	type _CVEC_TMP_X_VAR_ = val; \
 	int _CVEC_TMP_RETVAL_ = CVEC_NOT_ENOUGH_CAP; \
 	if (__cvec_hasEnoughCap(vec, 1)) \
 		_CVEC_TMP_RETVAL_ = func(vec, &_CVEC_TMP_X_VAR_); \
 	_CVEC_TMP_RETVAL_; \
-})
+}
 
 // Capacity modifiers
 #define cvec_push(vec, type, val) \
